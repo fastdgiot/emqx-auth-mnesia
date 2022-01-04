@@ -1,5 +1,5 @@
 %%--------------------------------------------------------------------
-%% Copyright (c) 2020 EMQ Technologies Co., Ltd. All Rights Reserved.
+%% Copyright (c) 2020-2021 EMQ Technologies Co., Ltd. All Rights Reserved.
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
 %% you may not use this file except in compliance with the License.
@@ -33,4 +33,16 @@ start_link() ->
 %%--------------------------------------------------------------------
 
 init([]) ->
-    {ok, {{one_for_one, 10, 100}, []}}.
+    {ok, {{one_for_one, 10, 100}, [
+        child_spec(emqx_acl_mnesia_migrator, worker, [])
+    ]}}.
+
+child_spec(M, worker, Args) ->
+    #{id       => M,
+      start    => {M, start_link, Args},
+      restart  => permanent,
+      shutdown => 5000,
+      type     => worker,
+      modules  => [M]
+     }.
+
